@@ -1,7 +1,7 @@
 package com.adil.ExpenseTracker.exception;
 
 import com.adil.ExpenseTracker.dto.ErrorResponse;
-import com.fasterxml.jackson.databind.exc.InvalidFormatException;
+import tools.jackson.databind.exc.MismatchedInputException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
-import java.util.Arrays;
 import java.util.stream.Collectors;
 
 @RestControllerAdvice
@@ -64,13 +63,10 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleNotReadable(HttpMessageNotReadableException ex) {
         String message = "Invalid request body";
         Throwable cause = ex.getCause();
-        if (cause instanceof InvalidFormatException ife) {
-            Class<?> targetType = ife.getTargetType();
+        if (cause instanceof MismatchedInputException mie) {
+            Class<?> targetType = mie.getTargetType();
             if (targetType != null && targetType.isEnum()) {
-                String allowed = Arrays.stream(targetType.getEnumConstants())
-                        .map(Object::toString)
-                        .collect(Collectors.joining(", "));
-                message = "Invalid value '" + ife.getValue() + "'. Allowed values are: " + allowed;
+                message = "Invalid category value. Allowed values are: FOOD, TRAVEL, SHOPPING, OTHER";
             }
         }
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
